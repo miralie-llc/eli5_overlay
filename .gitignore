@@ -1,0 +1,15 @@
+agents.md
+/private/
+**/bin/
+**/obj/
+/artifacts/
+**/node_modules/
+.vs/
+*.user
+*.suo
+.env
+.env.*
+!.env.example
+*.pfx
+*.p12
+auth.json

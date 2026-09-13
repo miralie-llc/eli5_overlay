@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF><UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>F1</AssemblyName><ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" /><Using Remove="System.Drawing" />
+    <ProjectReference Include="../F1.Core/F1.Core.csproj" /><ProjectReference Include="../F1.Infrastructure/F1.Infrastructure.csproj" />
+    <Content Include="../../pi-package/*.mjs;../../pi-package/*.ts;../../pi-package/package.json" Link="pi-package/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+{
+  "name": "f1-pi-capabilities",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": { "test": "node --test test/*.test.mjs" },
+  "pi": { "extensions": ["./index.ts"] },
+  "engines": { "node": ">=22" }
+}
