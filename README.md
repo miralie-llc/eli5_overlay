@@ -1,3 +1,12 @@
+# Inspiration
+
+The tool in this repository was made by Astra.  All code and documentation here was written by AI based on a prompt (in a single shot which is quite impressive).  I wanted a simple UI that I could use when I pressed F1 that would connect to a specific pi-agent that I have configured (in this case - a cheap model from OpenRouter).  
+
+The purpose was a fast way to ask very simple "explain like I'm 5" questions and gets short responses.
+
+It has some other half-baked ideas (exposure to tools, extensions, etc.) that aren't really tested.  Feel free to use or just have Astra make your own version.
+
+
 # F1 — quick help through your local Pi agent
 
 A small Windows tray app. Press **F1**, type a question, and receive a streamed answer. Escape cancels and closes the conversation. F1 runs as your user, not as a Windows service.
