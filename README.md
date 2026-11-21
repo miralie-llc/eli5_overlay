@@ -16,25 +16,25 @@ A small Windows tray app. Press **F1**, type a question, and receive a streamed 
 ## Requirements and setup
 
 - Windows 10/11 x64. Windows lifecycle/support requirements still apply.
-- Node.js 22 or newer and **Pi 0.85.1** (`@earendil-works/pi-coding-agent`). This release checks the exact version; it never updates Pi.
+- Node.js 22.19 or newer and [Pi](https://pi.dev/). F1 checks the Pi RPC connection, not an exact release number. F1 never installs, downgrades or updates Pi.
 - .NET 10 Desktop Runtime for the framework-dependent build. The self-contained portable ZIP includes the runtime.
 
-If Pi is not installed, install the supported version yourself:
+If Pi is not installed, use the [official installer](https://pi.dev/) or install the npm package yourself:
 
 ```powershell
-npm install -g @earendil-works/pi-coding-agent@0.85.1
+npm install -g @earendil-works/pi-coding-agent
 pi
 ```
 
 Configure and authenticate Pi normally. Extract the portable ZIP into a user-writable directory and run `F1.exe`. It starts in the tray without taking focus. Right-click its tray icon for **Settings**.
 
-The default Pi path is the standard Windows npm global installation. For another installation, set **Pi cli.js path** to its `dist/bundle/cli.js` and set **Node executable** as needed. Optionally point **Pi agent directory** at your existing configuration.
+Leave **Pi cli.js path** blank to follow the official Windows managed installation automatically, with global npm as a fallback. For another installation, select the installed package's CLI entry and set **Node executable** as needed. Optionally point **Pi agent directory** at your existing configuration.
 
 Press F1. Type `What is adamantium?` and press Enter. Use Shift+Enter for a newline, Ctrl+L to clear the input, and Escape to cancel and close. Follow-ups remain in memory until you close the overlay. Clicking elsewhere preserves the current conversation. Every fresh invocation starts in Help.
 
 ## Capabilities
 
-Help starts with two tools:
+Help starts with two tools. These are model-selected tools, not dedicated search commands:
 
 - `f1_weather`: current weather and today's forecast from Open-Meteo. Configure latitude/longitude in Settings or provide them in your question. No automatic geolocation. The free endpoint is for **noncommercial use**; commercial/self-hosted endpoints are configurable.
 - `f1_reference`: a bounded English Wikipedia lookup with disambiguation and source attribution.

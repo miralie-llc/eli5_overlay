@@ -31,7 +31,6 @@ public sealed class PiBackend(Settings settings, string dataDirectory, string ex
         await StopAsync();
         settings.Validate();
         var entry = LocateEntry(settings.PiEntryPath);
-        VerifyVersion(entry);
         profile = selectedProfile;
         var scratch = Path.Combine(dataDirectory, "scratch", profile.ToString().ToLowerInvariant());
         Directory.CreateDirectory(scratch);
@@ -73,25 +72,60 @@ public sealed class PiBackend(Settings settings, string dataDirectory, string ex
         try { await ControlAsync("inspect", startup.Token); }
         catch { await StopAsync(); throw; }
     }
-    public static string LocateEntry(string configured)
+    public static string LocateEntry(string configured) => LocateEntry(configured,
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".pi", "agent", "install"),
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "npm"));
+
+    public static string LocateEntry(string configured, string managedRoot, string npmRoot)
     {
         if (configured.Length > 0)
         {
-            if (!Path.IsPathFullyQualified(configured) || !File.Exists(configured)) throw new ArgumentException("Select Pi's installed dist/bundle/cli.js file in Settings.");
+            if (!Path.IsPathFullyQualified(configured) || !IsPiEntry(configured))
+                throw new ArgumentException("Select the installed Pi package's dist/bundle/cli.js in Settings, or leave it blank to detect Pi.");
             return configured;
         }
-        var entry = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "npm", "node_modules", "@earendil-works", "pi-coding-agent", "dist", "bundle", "cli.js");
-        if (!File.Exists(entry)) throw new InvalidOperationException("Pi was not found. Install Pi 0.85.1 and select its cli.js path in Settings.");
-        return entry;
+
+        var marker = Path.Combine(managedRoot, "current-version");
+        if (File.Exists(marker))
+        {
+            var release = File.ReadAllText(marker).Trim();
+            if (release is { Length: > 0 and <= 128 } && release is not "." and not ".."
+                && release.All(c => char.IsAsciiLetterOrDigit(c) || c is '.' or '_' or '+' or '-')
+                && !release.EndsWith('.'))
+            {
+                var entry = DefaultEntry(Path.Combine(managedRoot, "releases", release));
+                if (IsPiEntry(entry)) return entry;
+            }
+        }
+
+        var npmEntry = DefaultEntry(npmRoot);
+        if (IsPiEntry(npmEntry)) return npmEntry;
+        throw new InvalidOperationException("Pi was not found. Install Pi from pi.dev or select its dist/bundle/cli.js in Settings.");
     }
-    private static void VerifyVersion(string entry)
+
+    private const string PiPackage = "@earendil-works/pi-coding-agent";
+    private static string DefaultEntry(string root) =>
+        Path.Combine(root, "node_modules", "@earendil-works", "pi-coding-agent", "dist", "bundle", "cli.js");
+
+    private static bool IsPiEntry(string path)
     {
-        var package = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(entry)!, "..", "..", "package.json"));
-        using var json = JsonDocument.Parse(File.ReadAllText(package));
-        if (json.RootElement.GetProperty("name").GetString() != "@earendil-works/pi-coding-agent"
-            || json.RootElement.GetProperty("version").GetString() != "0.85.1")
-            throw new InvalidOperationException("This release supports Pi 0.85.1. Use that version; F1 will not update Pi automatically.");
+        if (!File.Exists(path) || !string.Equals(Path.GetFileName(path), "cli.js", StringComparison.OrdinalIgnoreCase))
+            return false;
+        var bundle = Path.GetDirectoryName(path)!;
+        var dist = Path.GetDirectoryName(bundle);
+        if (dist is null || !string.Equals(Path.GetFileName(bundle), "bundle", StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(Path.GetFileName(dist), "dist", StringComparison.OrdinalIgnoreCase)) return false;
+        var package = Path.Combine(Path.GetDirectoryName(dist)!, "package.json");
+        try
+        {
+            using var json = JsonDocument.Parse(File.ReadAllText(package));
+            return json.RootElement.ValueKind == JsonValueKind.Object
+                && json.RootElement.TryGetProperty("name", out var name)
+                && name.ValueKind == JsonValueKind.String && name.GetString() == PiPackage;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException) { return false; }
     }
+
     public async Task ResetAsync(CancellationToken token)
     {
         await operations.WaitAsync(token);

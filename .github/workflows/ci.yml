@@ -21,6 +21,9 @@ jobs:
       - run: npm install --prefix artifacts/pi-test @earendil-works/pi-coding-agent@0.85.1
       - run: node scripts/pi-smoke.mjs artifacts/pi-test/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js
       - run: node scripts/backend-smoke.mjs artifacts/pi-test/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js
+      - run: npm install --prefix artifacts/pi-current @earendil-works/pi-coding-agent@1.6.0
+      - run: node scripts/pi-smoke.mjs artifacts/pi-current/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js
+      - run: node scripts/backend-smoke.mjs artifacts/pi-current/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js
       - run: dotnet tests/F1.Tests/bin/Release/net10.0-windows/F1.Tests.dll --render artifacts/overlay.png
       - run: ./scripts/package.ps1
       - uses: actions/upload-artifact@v4

@@ -28,7 +28,7 @@ internal sealed class SettingsWindow : Window
         Add(panel, "Hotkey", current.Hotkey);
         capture.IsChecked = current.CaptureForeground; startup.IsChecked = current.StartWithWindows;
         panel.Children.Add(capture); panel.Children.Add(startup);
-        Add(panel, "Pi cli.js path (blank: standard npm installation)", current.PiEntryPath);
+        Add(panel, "Pi cli.js path (blank: auto-detect)", current.PiEntryPath);
         Add(panel, "Node executable", current.NodePath);
         Add(panel, "Pi agent directory (blank: Pi default)", current.AgentDirectory);
         Add(panel, "Model command (optional, e.g. /switch fast)", current.ModelCommand);
@@ -50,7 +50,7 @@ internal sealed class SettingsWindow : Window
                 var capabilities = await backend.InspectAsync(timeout.Token);
                 status.Text = "Pi connected. This tests RPC, not a paid model request.\n" + string.Join('\n', capabilities.Select(c => $"{(c.Enabled ? "Enabled" : "Disabled")}: {c.Name} — {c.Description}\nSource: {c.Source}"));
             }
-            catch (Exception ex) { status.Text = ex is ArgumentException or InvalidOperationException ? ex.Message : "Pi inspection failed. Check version 0.85.1, paths, and extension compatibility."; }
+            catch (Exception ex) { status.Text = ex is ArgumentException or InvalidOperationException ? ex.Message : "Pi inspection failed. Check the Pi path and extension compatibility."; }
             finally { inspect.IsEnabled = true; }
         };
         panel.Children.Add(inspect);
@@ -97,7 +97,7 @@ internal sealed class SettingsWindow : Window
         string[] Lines(string label) => Get(label).Split(['\r', '\n'], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries).Distinct(StringComparer.Ordinal).ToArray();
         double? Number(string label) => Get(label).Length == 0 ? null : double.Parse(Get(label), CultureInfo.InvariantCulture);
         Result.Hotkey = Get("Hotkey"); Result.CaptureForeground = capture.IsChecked == true; Result.StartWithWindows = startup.IsChecked == true;
-        Result.PiEntryPath = Get("Pi cli.js path (blank: standard npm installation)"); Result.NodePath = Get("Node executable");
+        Result.PiEntryPath = Get("Pi cli.js path (blank: auto-detect)"); Result.NodePath = Get("Node executable");
         Result.AgentDirectory = Get("Pi agent directory (blank: Pi default)"); Result.ModelCommand = Get("Model command (optional, e.g. /switch fast)");
         Result.Extensions = Lines("Extension paths (one installed local path per line)"); Result.Skills = Lines("Skill paths (one per line)");
         Result.PromptTemplates = Lines("Prompt template paths (one per line)"); Result.AllowedTools = Lines("Help tool names (one per line)");

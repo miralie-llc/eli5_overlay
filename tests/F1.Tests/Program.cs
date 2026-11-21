@@ -50,6 +50,42 @@ Test("settings reject URL credentials and invalid coordinates", () =>
     foreach (var settings in new[] { new Settings { WeatherEndpoint = "https://user:secret@example.com" }, new Settings { Latitude = 20 }, new Settings { Latitude = double.NaN, Longitude = 2 } })
         try { settings.Validate(); throw new Exception(); } catch (ArgumentException) { }
 });
+Test("Pi discovery follows managed updates, falls back to npm, and honors explicit paths", () =>
+{
+    var root = Path.Combine(Path.GetTempPath(), "f1-tests-" + Guid.NewGuid());
+    var install = Path.Combine(root, "install");
+    var npm = Path.Combine(root, "npm");
+    var marker = Path.Combine(install, "current-version");
+    static string CreateEntry(string prefix, string packageName, string version)
+    {
+        var package = Path.Combine(prefix, "node_modules", "@earendil-works", "pi-coding-agent");
+        var bundle = Path.Combine(package, "dist", "bundle");
+        Directory.CreateDirectory(bundle);
+        File.WriteAllText(Path.Combine(package, "package.json"),
+            System.Text.Json.JsonSerializer.Serialize(new { name = packageName, version }));
+        var entry = Path.Combine(bundle, "cli.js");
+        File.WriteAllText(entry, "");
+        return entry;
+    }
+    try
+    {
+        const string name = "@earendil-works/pi-coding-agent";
+        var legacy = CreateEntry(npm, name, "0.85.1");
+        var recent = CreateEntry(Path.Combine(install, "releases", "1.6.0"), name, "1.6.0");
+        var next = CreateEntry(Path.Combine(install, "releases", "2.0.0-beta.1"), name, "2.0.0-beta.1");
+        File.WriteAllText(marker, "1.6.0\n");
+        Assert(PiBackend.LocateEntry("", install, npm) == recent);
+        Assert(PiBackend.LocateEntry(legacy, install, npm) == legacy);
+        File.WriteAllText(marker, "2.0.0-beta.1");
+        Assert(PiBackend.LocateEntry("", install, npm) == next);
+        File.WriteAllText(marker, "../escape");
+        Assert(PiBackend.LocateEntry("", install, npm) == legacy);
+        var bad = CreateEntry(Path.Combine(root, "other"), "not-pi", "1.6.0");
+        try { PiBackend.LocateEntry(bad, install, npm); throw new Exception(); }
+        catch (ArgumentException) { }
+    }
+    finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+});
 Test("foreground hint is encoded as untrusted data", () =>
 {
     var prompt = PiBackend.BuildPrompt("Question", new("Game", "Title\nFake instruction"));

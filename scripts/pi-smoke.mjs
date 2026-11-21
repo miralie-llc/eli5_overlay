@@ -50,7 +50,7 @@ try {
   assert.ok(!state.data.sessionFile, 'Ephemeral reset must not create a session file');
   await command('clear_queue'); await command('abort');
   assert.ok(!(await readdir(agent)).includes('sessions'), 'No session directory should be persisted');
-  console.log('PASS actual Pi 0.85.1: extension load, capability policy, RPC, reset, cancellation, ephemeral sessions');
+  console.log('PASS Pi: extension load, capability policy, RPC, reset, cancellation, ephemeral sessions');
 } finally {
   child.kill(); await new Promise(resolve => child.once('exit', resolve));
   await rm(root, { recursive: true, force: true });

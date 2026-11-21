@@ -61,7 +61,7 @@ public partial class OverlayWindow : Window
             await backend.ResetAsync(CancellationToken.None);
             ready = IsVisible; if (ready) Status.Text = "Ready";
         }
-        catch { if (IsVisible) Status.Text = "Pi could not start. Check tray Settings and the supported Pi version."; }
+        catch { if (IsVisible) Status.Text = "Pi could not start. Run test Pi in tray Settings to check the path and RPC connection."; }
         finally { lifecycle.Release(); }
     }
     private void OnKeyDown(object sender, KeyEventArgs e)
